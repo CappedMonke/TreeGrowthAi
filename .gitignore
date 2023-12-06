@@ -1,0 +1,11 @@
+// Folders
+.idea
+.vs
+Binaries
+DerivedDataCache
+Intermediate
+Saved
+
+// Datatypes
+*.vsconfig
+*.sln

@@ -4,3 +4,12 @@
 
 #include "CoreMinimal.h"
 
+/**
+ * 
+ */
+class TREEGROWTHAI_API TreePoint
+{
+public:
+	TreePoint();
+	~TreePoint();
+};

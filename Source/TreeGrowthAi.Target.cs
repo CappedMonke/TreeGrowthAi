@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright © 2023 Silas Schuerger, Levin Theil
 
 using UnrealBuildTool;
 using System.Collections.Generic;

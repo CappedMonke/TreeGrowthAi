@@ -30,7 +30,13 @@ private:
 	void AdvanceDay();
 	
 	UPROPERTY(EditAnywhere, Category="Tree")
-	uint32 MeshQuality = 12;
+	int MeshQuality = 12;
+	UPROPERTY(EditAnywhere, Category="Tree")
+	float TrunkRadius = 1.0f;
+	UPROPERTY(EditAnywhere, Category="Tree")
+	float StartingHeight = 1.0f;
+	UPROPERTY(EditAnywhere, Category="Tree")
+	int StartingEnergy = 100;
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool ShowDebug = false;
 	UPROPERTY()

@@ -14,8 +14,16 @@ public:
 		return *Instance;
 	}
 
+	int GetId()
+	{
+		return CurrentId++;
+	}
+
 	uint32 MeshQuality = 12;
+	float TrunkRadius = 1.0f;
+	float StartingHeight = 1.0f;
 	
 private:
 	FGlobals() {}
+	int CurrentId = 0;
 };

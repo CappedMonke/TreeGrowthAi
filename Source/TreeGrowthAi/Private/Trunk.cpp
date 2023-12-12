@@ -6,10 +6,11 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-FTrunk::FTrunk()
+FTrunk::FTrunk(const int Energy)
+	: Energy(Energy), Id(FGlobals::Instance().GetId())
 {
-	AddTreePoint(FVector::ZeroVector, FVector::DownVector);
-	AddTreePoint(FVector::UpVector + FVector(0, 0, 10), TreePoints.Last()->Location);
+	AddTreePoint(FVector::ZeroVector, FVector::DownVector, FGlobals::Instance().TrunkRadius);
+	AddTreePoint(FVector(0, 0, FGlobals::Instance().StartingHeight), TreePoints.Last()->Location, TreePoints.Last()->Radius * 0.8);
 }
 
 FTrunk::~FTrunk()
@@ -20,9 +21,9 @@ FTrunk::~FTrunk()
 	}
 }
 
-void FTrunk::AddTreePoint(const FVector& Location, const FVector& FromLocation)
+void FTrunk::AddTreePoint(const FVector& Location, const FVector& FromLocation, const float Radius)
 {
-	FTreePoint* TreePoint = new FTreePoint(Location);
+	FTreePoint* TreePoint = new FTreePoint(Location, Radius);
 	
 	const FVector RotationAxis = Location - FromLocation;
 	checkf(RotationAxis != FVector::ZeroVector, TEXT("RotationAxis can't be ZeroVector!"));

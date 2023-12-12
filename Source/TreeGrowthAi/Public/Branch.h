@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "Trunk.h"
 
-class TREEGROWTHAI_API FBranch : public FTrunk
+class TREEGROWTHAI_API FBranch final : public FTrunk
 {
 public:
-	explicit FBranch(int Energy, FTrunk* FromBranch);
+	explicit FBranch(int InitEnergy, FTrunk* FromBranch);
 	virtual ~FBranch() override;
 
-	FTrunk* FromBranch;
+	void Setup(const FTreePoint* TreePoint, int Vertex);
+	virtual void Grow(const FVector& Direction, int EnergyIn) override;
+	void GrowLeaves();
 };

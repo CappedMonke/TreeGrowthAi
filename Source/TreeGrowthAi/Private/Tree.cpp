@@ -2,7 +2,7 @@
 
 
 #include "Tree.h"
-
+#include "Ki.h"
 #include "Globals.h"
 #include "Branch.h"
 
@@ -52,6 +52,7 @@ void ATree::GenerateTree()
 	Mesh->ClearAllMeshSections();
 	delete Trunk;
 	Trunk = new FTrunk(StartingEnergy);
+	Trunk->Setup();
 	FlushPersistentDebugLines(GetWorld());
 	IterateBranches(Trunk, &ATree::DrawTree);
 }
@@ -61,6 +62,7 @@ void ATree::AdvanceDay()
 	check(Trunk);
 	Trunk->Grow(FVector::UpVector, 5);
 	Mesh->ClearAllMeshSections();
+	IterateBranches(Trunk, &ATree::GrowTree);
 	IterateBranches(Trunk, &ATree::DrawTree);
 
 	if (FGlobals::Instance().IsTreeAlive == false)
@@ -124,6 +126,11 @@ void ATree::DrawTree(FTrunk* BranchIn)
 	}
 	
 	Mesh->CreateMeshSection(BranchIn->Id, Vertices, Triangles, TArray<FVector>(), TArray<FVector2d>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
+}
+
+void ATree::GrowTree(FTrunk* BranchIn)
+{
+	FKi::Instance().GrowTree(BranchIn);
 }
 
 void ATree::IterateBranches(FTrunk* BranchIn, void(ATree::* Function)(FTrunk* CurrentBranch))

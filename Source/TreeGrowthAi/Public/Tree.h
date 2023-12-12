@@ -45,6 +45,7 @@ private:
 	// SELF
 	void DrawDebugHelpers(FTrunk* BranchIn);
 	void DrawTree(FTrunk* BranchIn);
+	void GrowTree(FTrunk* BranchIn);
 	void IterateBranches(FTrunk* BranchIn, void(ATree::*Function)(FTrunk* CurrentBranch));
 	
 	FTrunk* Trunk;

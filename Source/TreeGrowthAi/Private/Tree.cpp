@@ -1,27 +1,90 @@
-// Copyright © 2023 Silas Schuerger, Levin Theil
+﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
 
 #include "Tree.h"
 
-// Sets default values
+#include "Globals.h"
+#include "Branch.h"
+
+
 ATree::ATree()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
+	Trunk = nullptr;
+	FGlobals::Instance().MeshQuality = MeshQuality;
 }
 
-// Called when the game starts or when spawned
 void ATree::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	GenerateTree();
 }
 
-// Called every frame
-void ATree::Tick(float DeltaTime)
+void ATree::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::Tick(DeltaTime);
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	if (!Trunk) return;
+
+	FlushPersistentDebugLines(GetWorld());
+	if (ShowDebug)
+	{
+		IterateBranches(Trunk, &ATree::DrawDebugHelpers);
+	}
+
+	if (FGlobals::Instance().MeshQuality != MeshQuality)
+	{
+		FGlobals::Instance().MeshQuality = MeshQuality;
+		GenerateTree();
+	}
+}
+
+void ATree::GenerateTree()
+{
+	delete Trunk;
+	Trunk = new FTrunk();
+	
+	if (ShowDebug)
+	{
+		FlushPersistentDebugLines(GetWorld());
+		IterateBranches(Trunk, &ATree::DrawDebugHelpers);
+	}
+}
+
+void ATree::AdvanceDay()
+{
+}
+
+void ATree::DrawDebugHelpers(FTrunk* BranchIn)
+{	
+	for (const auto& TreePoint : BranchIn->TreePoints)
+	{
+		DrawDebugSphere(GetWorld(), TreePoint->Location, 0.1, 4, FColor::Red, true);
+
+		for (const auto& Vertex : TreePoint->Vertices)
+		{
+			DrawDebugSphere(GetWorld(), Vertex, 0.1, 4, FColor::Blue, true);
+		}
+	}
+}
+
+void ATree::DrawTree(FTrunk* BranchIn)
+{	
+	for (auto& TreePoint : BranchIn->TreePoints)
+	{
+		
+	}
+
+
+}
+
+void ATree::IterateBranches(FTrunk* BranchIn, void(ATree::* Function)(FTrunk* CurrentBranch))
+{
+	(this->*Function)(BranchIn);
+	
+	for (const auto& Branch : BranchIn->Branches)
+	{
+		IterateBranches(Branch, Function);
+	}
 }
 

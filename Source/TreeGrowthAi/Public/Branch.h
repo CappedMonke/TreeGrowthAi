@@ -1,26 +1,15 @@
-// Copyright © 2023 Silas Schuerger, Levin Theil
+﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Branch.generated.h"
+#include "Trunk.h"
 
-UCLASS()
-class TREEGROWTHAI_API ABranch : public AActor
+class TREEGROWTHAI_API FBranch : public FTrunk
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ABranch();
+public:
+	FBranch(FTrunk* FromBranch);
+	~FBranch();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	FTrunk* FromBranch;
 };

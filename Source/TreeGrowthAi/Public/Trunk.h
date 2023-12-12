@@ -1,26 +1,29 @@
-// Copyright © 2023 Silas Schuerger, Levin Theil
+﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Trunk.generated.h"
 
-UCLASS()
-class TREEGROWTHAI_API ATrunk : public AActor
+class FBranch;
+
+struct FTreePoint
 {
-	GENERATED_BODY()
+	explicit FTreePoint(const FVector& Location)
+		: Location(Location) {}
 	
-public:	
-	// Sets default values for this actor's properties
-	ATrunk();
+	FVector Location;
+	TArray<FVector> Vertices;
+	float Radius = 5.0f;
+};
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+class TREEGROWTHAI_API FTrunk
+{
+public:
+	FTrunk();
+	~FTrunk();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	void AddTreePoint(const FVector& Location, const FVector& FromLocation);
+	
+	TArray<FBranch*> Branches;
+	TArray<FTreePoint*> TreePoints;
 };

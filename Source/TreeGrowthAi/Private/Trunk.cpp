@@ -10,7 +10,7 @@ FTrunk::FTrunk(const int Energy)
 	: Energy(Energy), Id(FGlobals::Instance().GetId())
 {
 	AddTreePoint(FVector::ZeroVector, FVector::DownVector, FGlobals::Instance().TrunkRadius);
-	AddTreePoint(FVector(0, 0, FGlobals::Instance().StartingHeight), TreePoints.Last()->Location, TreePoints.Last()->Radius * 0.8);
+	AddTreePoint(FVector(0, 0, FGlobals::Instance().StartingHeight), TreePoints.Last()->Location, FGlobals::Instance().TrunkRadius);
 }
 
 FTrunk::~FTrunk()
@@ -41,4 +41,27 @@ void FTrunk::AddTreePoint(const FVector& Location, const FVector& FromLocation, 
 	}
 	
 	TreePoints.Add(TreePoint);
+}
+
+void FTrunk::Grow(const FVector& Direction, const int EnergyIn)
+{
+	Energy -= EnergyIn;
+	if (Energy < 0)
+	{
+		FGlobals::Instance().IsTreeAlive = false;
+		return;
+	}
+	
+	const FVector NewLocation = TreePoints.Last()->Location + Direction * EnergyIn;
+
+	for (const auto& TreePoint : TreePoints)
+	{
+		for (auto& Vertex : TreePoint->Vertices)
+		{
+			FVector OriginToVertex = Vertex - TreePoint->Location;
+			Vertex += OriginToVertex * BaseGrowthRate * EnergyIn;
+		}
+	}
+	
+	AddTreePoint(NewLocation, TreePoints.Last()->Location, FGlobals::Instance().TrunkRadius);
 }

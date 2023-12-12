@@ -9,7 +9,7 @@
 
 ATree::ATree()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	Trunk = nullptr;
 	FGlobals::Instance().MeshQuality = MeshQuality;
 	FGlobals::Instance().TrunkRadius = TrunkRadius;
@@ -58,6 +58,16 @@ void ATree::GenerateTree()
 
 void ATree::AdvanceDay()
 {
+	check(Trunk);
+	Trunk->Grow(FVector::UpVector, 5);
+	Mesh->ClearAllMeshSections();
+	IterateBranches(Trunk, &ATree::DrawTree);
+
+	if (FGlobals::Instance().IsTreeAlive == false)
+	{
+		GenerateTree();
+		FGlobals::Instance().IsTreeAlive = true;
+	}
 }
 
 void ATree::DrawDebugHelpers(FTrunk* BranchIn)

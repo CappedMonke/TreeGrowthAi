@@ -4,8 +4,8 @@
 #include "Branch.h"
 
 
-FBranch::FBranch(FTrunk* FromBranch)
-	: FromBranch(FromBranch)
+FBranch::FBranch(int Energy, FTrunk* FromBranch)
+	: FTrunk(Energy), FromBranch(FromBranch)
 {
 }
 

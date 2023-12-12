@@ -20,16 +20,17 @@ class TREEGROWTHAI_API FTrunk
 {
 public:
 	explicit FTrunk(int Energy);
-	~FTrunk();
+	virtual ~FTrunk();
 
 	void AddTreePoint(const FVector& Location, const FVector& FromLocation, const float Radius);
-	void Grow();
+	virtual void Grow(const FVector& Direction, int EnergyIn);
 	void GrowBranch();
 	
 	TArray<FBranch*> Branches;
 	TArray<FTreePoint*> TreePoints;
 
 	int Energy = 100;
+	float BaseGrowthRate = 0.01f;
 	int DailyEnergyConsumption = 0;
 	int Id;
 };

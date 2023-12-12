@@ -8,8 +8,8 @@
 class TREEGROWTHAI_API FBranch : public FTrunk
 {
 public:
-	FBranch(FTrunk* FromBranch);
-	~FBranch();
+	explicit FBranch(int Energy, FTrunk* FromBranch);
+	virtual ~FBranch() override;
 
 	FTrunk* FromBranch;
 };

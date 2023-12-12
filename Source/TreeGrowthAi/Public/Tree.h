@@ -34,9 +34,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Tree")
 	float TrunkRadius = 1.0f;
 	UPROPERTY(EditAnywhere, Category="Tree")
-	float StartingHeight = 1.0f;
+	float StartingHeight = 5.0f;
 	UPROPERTY(EditAnywhere, Category="Tree")
-	int StartingEnergy = 100;
+	int StartingEnergy = 50;
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool ShowDebug = false;
 	UPROPERTY()

@@ -22,6 +22,7 @@ public:
 	uint32 MeshQuality = 12;
 	float TrunkRadius = 1.0f;
 	float StartingHeight = 1.0f;
+	bool IsTreeAlive = true;
 	
 private:
 	FGlobals() {}

@@ -8,7 +8,7 @@ public class TreeGrowthAi : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "LearningAgents" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

@@ -1,27 +1,78 @@
-// Copyright © 2023 Silas Schuerger, Levin Theil
+﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
 
 #include "Tree.h"
 
-// Sets default values
+#include "TreeData.h"
+#include "Segment.h"
+
+
 ATree::ATree()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
-// Called when the game starts or when spawned
-void ATree::BeginPlay()
+void ATree::GenerateTree() const
 {
-	Super::BeginPlay();
+	if(FTreeData::Instance().Start)
+	{
+		FTreeData::Instance().AllSegments.Empty();
+        FTreeData::Instance().NewSegments.Empty();
+        FTreeData::Instance().SegmentsWithLeaves.Empty();
+		delete FTreeData::Instance().Start;
+	}
 	
+	FTreeData::Instance().Start = new FSegment(nullptr, FVector::UpVector, 0, InitEnergy);
+	DrawDebug();
 }
 
-// Called every frame
-void ATree::Tick(float DeltaTime)
+void ATree::AdvanceDay()
 {
-	Super::Tick(DeltaTime);
+	for (const auto& Segment : FTreeData::Instance().AllSegments)
+	{
+		Segment->Grow();
+	}
 
+	if (FTreeData::Instance().AllSegments.Num() == 0)
+	{
+		GenerateTree();
+	}
+
+	if (Day )
+	Day++;
+	DrawDebug();
+}
+
+void ATree::DrawDebug() const
+{
+	if (!EnableDebug) return;
+	
+	FlushPersistentDebugLines(GetWorld());
+	for (const auto& Segment : FTreeData::Instance().AllSegments)
+	{
+		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
+		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
+		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
+		FColor Color = FColor(Red, Green, 0);
+		DrawDebugCylinder(GetWorld(), Segment->Start, Segment->End, Segment->Radius, 8, Color, true);
+	}
+}
+
+void ATree::AddSegment() const
+{
+	for (const auto& Segment : FTreeData::Instance().NewSegments)
+	{
+		Segment->GrowSegment(true, FVector::UpVector);
+	}
+
+	DrawDebug();
+}
+
+void ATree::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (EnableDebug) DrawDebug();
+	else FlushPersistentDebugLines(GetWorld());
 }
 

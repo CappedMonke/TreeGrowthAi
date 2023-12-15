@@ -1,4 +1,4 @@
-// Copyright © 2023 Silas Schuerger, Levin Theil
+﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
 #pragma once
 
@@ -10,17 +10,29 @@ UCLASS()
 class TREEGROWTHAI_API ATree : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	ATree();
 
+	UFUNCTION(CallInEditor, Category="Tree")
+	void GenerateTree() const;
+
+	UFUNCTION(CallInEditor, Category="Tree")
+	void AdvanceDay();
+
+	// Debugging
+	UFUNCTION(CallInEditor, Category="Tree")
+	void AddSegment() const;
+	void DrawDebug() const;
+
+	UPROPERTY(EditAnywhere, Category="Tree")
+	bool EnableDebug = true;
+	
+	UPROPERTY(EditAnywhere, Category="Tree")
+	int InitEnergy = 100;
+
+	int Day = 0;
+	
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 };

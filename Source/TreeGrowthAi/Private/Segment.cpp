@@ -1,15 +1,20 @@
 ﻿// Copyright © 2023 Silas Schuerger, Levin Theil
 
+#include "Segment.h"
 
-#include "TreeData.h"
+#include "Leaves.h"
+#include "Tree.h"
 
 
-FSegment::FSegment(FSegment* FromSegment, const FVector& ToLocation, const int ID, const float InitEnergy)
-	: Index(ID), Energy(InitEnergy)
+void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLocation, const int ID, float InitEnergy)
 {
-	if(FromSegment)
+	this->Tree = TreeIn;
+	this->Index = ID;
+	this->Energy = InitEnergy;
+	
+	if(LastSegment)
 	{
-		this->FromSegment = FromSegment;
+		this->FromSegment = LastSegment;
 		Start = FromSegment->End;
 	}
 	else
@@ -19,39 +24,56 @@ FSegment::FSegment(FSegment* FromSegment, const FVector& ToLocation, const int I
 	End = Start + ToLocation * GrowthLengthMulitplier;
 	Height = End.Z;
 
-	FTreeData::Instance().AllSegments.Add(this);
-	FTreeData::Instance().NewSegments.Add(this);
+	Tree->AllSegments.Add(this);
+	Tree->NewSegments.Add(this);
 }
 
-void FSegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection)
+void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection)
 {
 	if(!ShouldGrow) return;
 	if (Energy - SegmentCost < 0) return;
 
-	FTreeData::Instance().NewSegments.Remove(this);
-	ToSegments.Add(new FSegment(this, GrowthDirection.GetSafeNormal(), Index + 1, Energy - SegmentCost));
+	Tree->NewSegments.Remove(this);
+	CanGrowLeaves = false;
+	
+	USegment* SegmentObj = NewObject<USegment>();
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy - SegmentCost);
+	ToSegments.Add(SegmentObj);
+	
 	Energy = 0;
 }
 
-void FSegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
+void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
 {
 	if(!ShouldBranchOff) return;
 	if (Energy - SegmentCost - BranchCost < 0) return;
 
 	// TODO: Handle that they dont spawn too close to each other
 	
-	FTreeData::Instance().NewSegments.Remove(this);
-	ToSegments.Add(new FSegment(this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost)); // Segment
-	ToSegments.Add(new FSegment(this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - BranchCost)); // Branch
+	Tree->NewSegments.Remove(this);
+	CanGrowLeaves = false;
+	
+	USegment* SegmentObj = NewObject<USegment>();
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost);
+	ToSegments.Add(SegmentObj); // Segment
+	
+	SegmentObj = NewObject<USegment>();
+	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - BranchCost);
+	ToSegments.Add(SegmentObj); // Branch
+	
 	Energy = 0;
 }
 
-void FSegment::GrowLeaves(const bool ShouldGrowLeaves)
+void USegment::GrowLeaves(const bool ShouldGrowLeaves)
 {
+	if(!ShouldGrowLeaves || !CanGrowLeaves) return;
 	
+	CanGrowLeaves = false;
+	Leaves = Tree->GetWorld()->SpawnActor<ALeaves>(Tree->LeavesClass, End, FRotator::ZeroRotator);
+	Tree->AllLeaves.Add(Leaves);
 }
 
-void FSegment::Grow()
+void USegment::Grow()
 {
 	Energy -= Radius * DailyCostMultiplier;
 
@@ -70,14 +92,14 @@ void FSegment::Grow()
 	}
 }
 
-void FSegment::DeleteToSegments()
+void USegment::DeleteToSegments()
 {
 	for (const auto& Segment : ToSegments)
 	{
 		Segment->DeleteToSegments();
-		FTreeData::Instance().RemoveSegmentFromAll(Segment);
+		Tree->RemoveSegment(Segment);
 	}
-	FTreeData::Instance().RemoveSegmentFromAll(this);
+	Tree->RemoveSegment(this);
 }
 
 

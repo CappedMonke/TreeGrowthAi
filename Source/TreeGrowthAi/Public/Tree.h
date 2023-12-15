@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Leaves.h"
+#include "Segment.h"
 #include "GameFramework/Actor.h"
 #include "Tree.generated.h"
 
@@ -26,6 +28,9 @@ public:
 
 	UFUNCTION(CallInEditor, Category="Tree")
 	void BranchOff() const;
+
+	UFUNCTION(CallInEditor, Category="Tree")
+	void GrowLeaves() const;
 	
 	void DrawDebug() const;
 
@@ -36,6 +41,18 @@ public:
 	int InitEnergy = 100;
 
 	int Day = 0;
+
+	UPROPERTY(EditAnywhere, Category="Tree")
+	TSubclassOf<ALeaves> LeavesClass;
+
+	UPROPERTY()
+	TArray<USegment*> AllSegments;
+	UPROPERTY()
+	TArray<USegment*> NewSegments;
+	UPROPERTY()
+	TArray<ALeaves*> AllLeaves;
+
+	void RemoveSegment(USegment* Segment);
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

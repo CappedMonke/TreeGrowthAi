@@ -3,7 +3,6 @@
 
 #include "Tree.h"
 
-#include "TreeData.h"
 #include "Segment.h"
 
 
@@ -14,26 +13,31 @@ ATree::ATree()
 
 void ATree::GenerateTree()
 {
-	if(!FTreeData::Instance().AllSegments.IsEmpty())
+	if(!AllSegments.IsEmpty())
 	{
-		FTreeData::Instance().AllSegments.Empty();
-        FTreeData::Instance().NewSegments.Empty();
-        FTreeData::Instance().SegmentsWithLeaves.Empty();
+		AllSegments.Empty();
+        NewSegments.Empty();
+		for (const auto& Leaves : AllLeaves)
+		{
+			Leaves->Destroy();
+		}
+		AllLeaves.Empty();
 	}
 
-	new FSegment(nullptr, FVector::UpVector, 0, InitEnergy);
+	NewObject<USegment>()->Setup(this, nullptr, FVector::UpVector, 0, InitEnergy);
+	
 	Day = 0;
 	DrawDebug();
 }
 
 void ATree::AdvanceDay()
 {
-	for (const auto& Segment : FTreeData::Instance().AllSegments)
+	for (const auto& Segment : AllSegments)
 	{
 		Segment->Grow();
 	}
 
-	if (FTreeData::Instance().AllSegments.Num() == 0)
+	if (AllSegments.Num() == 0)
 	{
 		GenerateTree();
 	}
@@ -47,7 +51,7 @@ void ATree::DrawDebug() const
 	if (!EnableDebug) return;
 	
 	FlushPersistentDebugLines(GetWorld());
-	for (const auto& Segment : FTreeData::Instance().AllSegments)
+	for (const auto& Segment : AllSegments)
 	{
 		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
@@ -56,7 +60,7 @@ void ATree::DrawDebug() const
 		DrawDebugCylinder(GetWorld(), Segment->Start + GetActorLocation(), Segment->End + GetActorLocation(), Segment->Radius, 8, Color, true);
 	}
 
-	for (const auto& Segment : FTreeData::Instance().NewSegments)
+	for (const auto& Segment : NewSegments)
 	{
 		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
@@ -68,7 +72,7 @@ void ATree::DrawDebug() const
 
 void ATree::AddSegment() const
 {
-	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
+	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
 	{
 		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
@@ -81,20 +85,39 @@ void ATree::AddSegment() const
 
 void ATree::BranchOff() const
 {
-	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
+	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
 	{
 		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
 		SegmentDirection += FVector(FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f));
 		FVector BranchDirection = SegmentDirection + FVector(
-			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
-			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
-			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f)
+			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
+			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
+			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f)
 		);
 		Segment->BranchOff(true, SegmentDirection, BranchDirection);
 	}
 
 	DrawDebug();
+}
+
+void ATree::GrowLeaves() const
+{
+	if (!LeavesClass) return;
+	
+	TArray<USegment*> Segments = NewSegments;
+	for (const auto& Segment : Segments)
+	{
+		Segment->GrowLeaves(true);
+	}
+}
+
+void ATree::RemoveSegment(USegment* Segment)
+{
+	AllSegments.Remove(Segment);
+	NewSegments.Remove(Segment);
+	AllLeaves.Remove(Segment->Leaves);
+	Segment->Leaves->Destroy();
 }
 
 void ATree::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)

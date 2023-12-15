@@ -58,7 +58,11 @@ void ATree::DrawDebug() const
 
 	for (const auto& Segment : FTreeData::Instance().NewSegments)
 	{
-		DrawDebugSphere(GetWorld(), Segment->End, 2, 8, FColor::Green, true);
+		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
+		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
+		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
+		FColor Color = FColor(Red, Green, 0);
+		DrawDebugSphere(GetWorld(), Segment->End, 2, 8, Color, true);
 	}
 }
 
@@ -67,7 +71,9 @@ void ATree::AddSegment() const
 	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
 	for (const auto& Segment : Segments)
 	{
-		Segment->GrowSegment(true, FVector::UpVector);
+		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
+		SegmentDirection += FVector(FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f));
+		Segment->GrowSegment(true, SegmentDirection);
 	}
 	
 	DrawDebug();
@@ -78,7 +84,14 @@ void ATree::BranchOff() const
 	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
 	for (const auto& Segment : Segments)
 	{
-		Segment->BranchOff(true, FVector::UpVector, FVector::RightVector);
+		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
+		SegmentDirection += FVector(FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f));
+		FVector BranchDirection = SegmentDirection + FVector(
+			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
+			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
+			(FMath::FRandRange(0.3f, 0.5f) <= 0.2f) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f)
+		);
+		Segment->BranchOff(true, SegmentDirection, BranchDirection);
 	}
 
 	DrawDebug();

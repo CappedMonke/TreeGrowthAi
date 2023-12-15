@@ -27,9 +27,9 @@ void FSegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection
 {
 	if(!ShouldGrow) return;
 	if (Energy - SegmentCost < 0) return;
-	
+
 	FTreeData::Instance().NewSegments.Remove(this);
-	ToSegments.Add(new FSegment(this, GrowthDirection, Index + 1, Energy - SegmentCost));
+	ToSegments.Add(new FSegment(this, GrowthDirection.GetSafeNormal(), Index + 1, Energy - SegmentCost));
 	Energy = 0;
 }
 
@@ -41,8 +41,8 @@ void FSegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 	// TODO: Handle that they dont spawn too close to each other
 	
 	FTreeData::Instance().NewSegments.Remove(this);
-	ToSegments.Add(new FSegment(this, GrowthDirection, Index + 1, Energy / 2 - SegmentCost)); // Segment
-	ToSegments.Add(new FSegment(this, BranchGrowthDirection, Index + 1, Energy / 2 - BranchCost)); // Branch
+	ToSegments.Add(new FSegment(this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost)); // Segment
+	ToSegments.Add(new FSegment(this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - BranchCost)); // Branch
 	Energy = 0;
 }
 

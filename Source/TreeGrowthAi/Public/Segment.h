@@ -8,10 +8,10 @@
 class TREEGROWTHAI_API FSegment
 {
 public:
-	FSegment(const FSegment* FromSegment, const FVector& ToLocation, const int ID, float InitEnergy = 0);
-	void BranchOff(bool ShouldBranchOff, const FVector& Direction);
+	FSegment(FSegment* FromSegment, const FVector& ToLocation, const int ID, float InitEnergy = 0);
+	void BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection);
 	void GrowLeaves(bool ShouldGrowLeaves);
-	void GrowSegment(bool ShouldGrow, const FVector& Direction);
+	void GrowSegment(bool ShouldGrow, const FVector& GrowthDirection);
 	void Grow(); // TODO: This must grow the leaves, the bigger the leaves, the higher the gained Energy.
 	void DeleteToSegments();
 

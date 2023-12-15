@@ -12,17 +12,17 @@ ATree::ATree()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ATree::GenerateTree() const
+void ATree::GenerateTree()
 {
-	if(FTreeData::Instance().Start)
+	if(!FTreeData::Instance().AllSegments.IsEmpty())
 	{
 		FTreeData::Instance().AllSegments.Empty();
         FTreeData::Instance().NewSegments.Empty();
         FTreeData::Instance().SegmentsWithLeaves.Empty();
-		delete FTreeData::Instance().Start;
 	}
-	
-	FTreeData::Instance().Start = new FSegment(nullptr, FVector::UpVector, 0, InitEnergy);
+
+	new FSegment(nullptr, FVector::UpVector, 0, InitEnergy);
+	Day = 0;
 	DrawDebug();
 }
 
@@ -37,8 +37,7 @@ void ATree::AdvanceDay()
 	{
 		GenerateTree();
 	}
-
-	if (Day )
+	
 	Day++;
 	DrawDebug();
 }
@@ -54,15 +53,32 @@ void ATree::DrawDebug() const
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
 		FColor Color = FColor(Red, Green, 0);
-		DrawDebugCylinder(GetWorld(), Segment->Start, Segment->End, Segment->Radius, 8, Color, true);
+		DrawDebugCylinder(GetWorld(), Segment->Start + GetActorLocation(), Segment->End + GetActorLocation(), Segment->Radius, 8, Color, true);
+	}
+
+	for (const auto& Segment : FTreeData::Instance().NewSegments)
+	{
+		DrawDebugSphere(GetWorld(), Segment->End, 2, 8, FColor::Green, true);
 	}
 }
 
 void ATree::AddSegment() const
 {
-	for (const auto& Segment : FTreeData::Instance().NewSegments)
+	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
+	for (const auto& Segment : Segments)
 	{
 		Segment->GrowSegment(true, FVector::UpVector);
+	}
+	
+	DrawDebug();
+}
+
+void ATree::BranchOff() const
+{
+	TArray<FSegment*> Segments = FTreeData::Instance().NewSegments;
+	for (const auto& Segment : Segments)
+	{
+		Segment->BranchOff(true, FVector::UpVector, FVector::RightVector);
 	}
 
 	DrawDebug();

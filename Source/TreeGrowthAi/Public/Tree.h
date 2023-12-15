@@ -15,7 +15,7 @@ public:
 	ATree();
 
 	UFUNCTION(CallInEditor, Category="Tree")
-	void GenerateTree() const;
+	void GenerateTree();
 
 	UFUNCTION(CallInEditor, Category="Tree")
 	void AdvanceDay();
@@ -23,6 +23,10 @@ public:
 	// Debugging
 	UFUNCTION(CallInEditor, Category="Tree")
 	void AddSegment() const;
+
+	UFUNCTION(CallInEditor, Category="Tree")
+	void BranchOff() const;
+	
 	void DrawDebug() const;
 
 	UPROPERTY(EditAnywhere, Category="Tree")

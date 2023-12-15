@@ -11,7 +11,6 @@ class TREEGROWTHAI_API FTreeData
 public:
 	static FTreeData& Instance();
 	
-	FSegment* Start = nullptr;
 	TArray<FSegment*> AllSegments;
 	TArray<FSegment*> NewSegments;
 	TArray<FSegment*> SegmentsWithLeaves;

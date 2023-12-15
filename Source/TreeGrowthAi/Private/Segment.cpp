@@ -4,11 +4,12 @@
 #include "TreeData.h"
 
 
-FSegment::FSegment(const FSegment* FromSegment, const FVector& ToLocation, const int ID, const float InitEnergy)
+FSegment::FSegment(FSegment* FromSegment, const FVector& ToLocation, const int ID, const float InitEnergy)
 	: Index(ID), Energy(InitEnergy)
 {
 	if(FromSegment)
 	{
+		this->FromSegment = FromSegment;
 		Start = FromSegment->End;
 	}
 	else
@@ -22,27 +23,32 @@ FSegment::FSegment(const FSegment* FromSegment, const FVector& ToLocation, const
 	FTreeData::Instance().NewSegments.Add(this);
 }
 
-void FSegment::BranchOff(const bool ShouldBranchOff, const FVector& Direction)
-{
-	if(!ShouldBranchOff) return;
-	if (Energy - SegmentCost - BranchCost < 0) return;
-
-	FTreeData::Instance().NewSegments.Remove(this);
-}
-
-void FSegment::GrowLeaves(const bool ShouldGrowLeaves)
-{
-	
-}
-
-void FSegment::GrowSegment(const bool ShouldGrow, const FVector& Direction)
+void FSegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection)
 {
 	if(!ShouldGrow) return;
 	if (Energy - SegmentCost < 0) return;
 	
 	FTreeData::Instance().NewSegments.Remove(this);
-	ToSegments.Add(new FSegment(this, Direction, Index + 1, Energy));
+	ToSegments.Add(new FSegment(this, GrowthDirection, Index + 1, Energy - SegmentCost));
 	Energy = 0;
+}
+
+void FSegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
+{
+	if(!ShouldBranchOff) return;
+	if (Energy - SegmentCost - BranchCost < 0) return;
+
+	// TODO: Handle that they dont spawn too close to each other
+	
+	FTreeData::Instance().NewSegments.Remove(this);
+	ToSegments.Add(new FSegment(this, GrowthDirection, Index + 1, Energy / 2 - SegmentCost)); // Segment
+	ToSegments.Add(new FSegment(this, BranchGrowthDirection, Index + 1, Energy / 2 - BranchCost)); // Branch
+	Energy = 0;
+}
+
+void FSegment::GrowLeaves(const bool ShouldGrowLeaves)
+{
+	
 }
 
 void FSegment::Grow()

@@ -36,6 +36,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool EnableDebug = true;
+	UPROPERTY(EditAnywhere, Category="Tree")
+	bool EnableDebugStrings = true;
 	
 	UPROPERTY(EditAnywhere, Category="Tree")
 	int InitEnergy = 2000;
@@ -56,6 +58,34 @@ public:
 
 	void RemoveSegment(USegment* Segment);
 	float TreeEnergy = 0;
+
+	UPROPERTY(EditAnywhere, Category="Segments")
+	int MaxDaysWithoutEnergy = 7;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float DailyCostMultiplier = 5.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float SegmentCost = 10.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float BranchCost = 40.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float LeavesCost = 60.0f;
+	UPROPERTY(EditAnywhere, Category="Segments", meta = (ToolTip = "The higher the lesser the chance to spawn two branches."))
+	int TwoBranchesSpawnRate = 3;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float TreeTotalEnergyMultiplier = 0.2; // How much Energy will be sent to the NewSegments
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float GrowthLengthMulitplier = 5.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float GrowthRadiusMultiplier = 0.1f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float MinGrowthAngle = 0.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float MaxGrowthAngle = 20.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float MinBranchAngle = 20.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float MaxBranchAngle = 90.0f;
+
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

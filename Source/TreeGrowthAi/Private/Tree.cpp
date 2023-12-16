@@ -47,7 +47,7 @@ void ATree::AdvanceDay()
 		Segment->ShareEnergy();
 	}
 
-	const int SegmentEnergyShare = TreeEnergy / AllSegments.Num();
+	const int SegmentEnergyShare = TreeEnergy / NewSegments.Num();
 	TreeEnergy = 0;
 	for (const auto& Segment : NewSegments)
 	{
@@ -78,19 +78,29 @@ void ATree::DrawDebug() const
 	float OverallEnergy = TreeEnergy;
 	for (const auto& Segment : AllSegments)
 	{
+		if (!Segment) break;
+		
 		OverallEnergy += Segment->Energy;
 		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
 		FColor Color = FColor(Red, Green, 0);
 		DrawDebugCylinder(GetWorld(), Segment->Start + GetActorLocation(), Segment->End + GetActorLocation(), Segment->Radius, 8, Color, true);
-		DrawDebugString(GetWorld(), Segment->Start + (Segment->End - Segment->Start) / 2 + GetActorLocation(), FString::SanitizeFloat(Segment->Energy));
+		if (EnableDebugStrings)
+		{
+			DrawDebugString(GetWorld(), Segment->Start + (Segment->End - Segment->Start) / 2 + GetActorLocation(), FString::SanitizeFloat(Segment->Energy));
+		}
 	}
-	DrawDebugString(GetWorld(), GetActorLocation() + FVector(1, 0, 0) * 50, FString::SanitizeFloat(OverallEnergy), nullptr, FColor::Green);
+	if (EnableDebugStrings)
+	{
+		DrawDebugString(GetWorld(), GetActorLocation() + FVector(1, 0, 0) * 50, FString::SanitizeFloat(OverallEnergy), nullptr, FColor::Green);
+	}
 
 	for (const auto& Segment : NewSegments)
 	{
-		float EnergyRatio = FMath::Clamp(Segment->Energy / USegment::BranchCost, 0, 1);
+		if (!Segment) break;
+		
+		float EnergyRatio = FMath::Clamp(Segment->Energy / BranchCost, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
 		FColor Color = FColor(Red, Green, 0);
@@ -125,7 +135,8 @@ void ATree::BranchOff()
 			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
 			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f)
 		);
-		Segment->BranchOff(true, SegmentDirection, BranchDirection);
+		const bool TwoBranches = FMath::RandRange(0, TwoBranchesSpawnRate) == 0 ? true : false;
+		Segment->BranchOff(true, SegmentDirection, BranchDirection, TwoBranches);
 	}
 
 	AdvanceDay();

@@ -4,6 +4,8 @@
 
 #include "Leaves.h"
 #include "Tree.h"
+#include "Kismet/BlueprintTypeConversions.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLocation, const int ID, float InitEnergy)
@@ -21,7 +23,7 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 	{
 		Start = FVector::ZeroVector;
 	}
-	End = Start + ToLocation * GrowthLengthMulitplier;
+	End = Start + ToLocation * Tree->GrowthLengthMulitplier;
 	Height = End.Z;
 		
 	Tree->AllSegments.Add(this);
@@ -31,13 +33,13 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection)
 {
 	if(!ShouldGrow) return;
-	if (Energy - SegmentCost < 0) return;
+	if (Energy - Tree->SegmentCost < 0) return;
 
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
 	
 	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost);
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - Tree->SegmentCost);
 	ToSegments.Add(SegmentObj);
 
 	Energy = Energy / 2;
@@ -62,10 +64,10 @@ void USegment::ShareEnergy()
 	}
 }
 
-void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
+void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection, const bool SecondBranch)
 {
-	if(!ShouldBranchOff) return;
-	if (Energy - BranchCost < 0) return;
+	if (!ShouldBranchOff) return;
+	if (Energy - Tree->BranchCost < 0) return;
 
 	// TODO: Handle that they dont spawn too close to each other
 	
@@ -73,22 +75,30 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 	CanGrowLeaves = false;
 	
 	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - BranchCost) / 4);
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
 	ToSegments.Add(SegmentObj); // Segment
 	
 	SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - BranchCost) / 4);
-	ToSegments.Add(SegmentObj); // Branc
+	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
+	ToSegments.Add(SegmentObj); // Branch
 
-	Energy = (Energy - BranchCost) / 2;
+	if (SecondBranch)
+	{
+		const FVector SecondBranchDirection = UKismetMathLibrary::RotateAngleAxis(BranchGrowthDirection.GetSafeNormal(), 180, Start - End);
+		SegmentObj = NewObject<USegment>();
+		SegmentObj->Setup(Tree, this, SecondBranchDirection, Index + 1, (Energy - Tree->BranchCost) / 4);
+		ToSegments.Add(SegmentObj); // Branch
+	}
+
+	Energy = (Energy - Tree->BranchCost) / 2;
 }
 
 void USegment::GrowLeaves(const bool ShouldGrowLeaves)
 {
 	if(!ShouldGrowLeaves || !CanGrowLeaves) return;
-	if (Energy - LeavesCost < 0) return;
+	if (Energy - Tree->LeavesCost < 0) return;
 
-	Energy -= LeavesCost;
+	Energy -= Tree->LeavesCost;
 	CanGrowLeaves = false;
 	Leaves = Tree->GetWorld()->SpawnActor<ALeaves>(Tree->LeavesClass, End, FRotator::ZeroRotator);
 	Tree->LeavesSegments.Add(this);
@@ -97,10 +107,10 @@ void USegment::GrowLeaves(const bool ShouldGrowLeaves)
 
 void USegment::Grow()
 {
-	if(Energy - Radius * DailyCostMultiplier < 0)
+	if(Energy - Radius * Tree->DailyCostMultiplier < 0)
 	{
 		DaysWithoutEnergy++;
-		if (DaysWithoutEnergy > MaxDaysWithoutEnergy)
+		if (DaysWithoutEnergy > Tree->MaxDaysWithoutEnergy)
 		{
 			DeleteToSegments();
 		}
@@ -112,9 +122,10 @@ void USegment::Grow()
 	{
 		DaysWithoutEnergy--;
 	}
-	Energy -= Radius * DailyCostMultiplier;
-	Radius += Energy * GrowthRadiusMultiplier;
-	const float EnergyToSpend = Energy * TreeTotalEnergyMultiplier;
+	
+	Energy -= Radius * Tree->DailyCostMultiplier;
+	Radius += Energy / Tree->InitEnergy * Tree->GrowthRadiusMultiplier;
+	const float EnergyToSpend = Energy * Tree->TreeTotalEnergyMultiplier;
 	Tree->TreeEnergy += EnergyToSpend;
 	Energy -= EnergyToSpend;
 }

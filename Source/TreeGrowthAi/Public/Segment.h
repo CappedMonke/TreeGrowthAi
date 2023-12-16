@@ -16,7 +16,7 @@ class TREEGROWTHAI_API USegment : public UObject
 
 public:
 	void Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLocation, const int ID, float InitEnergy);
-	void BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection);
+	void BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection, bool SecondBranch);
 	void GrowLeaves(const bool ShouldGrowLeaves);
 	void GrowSegment(bool ShouldGrow, const FVector& GrowthDirection);
 	void ShareEnergy();
@@ -48,19 +48,4 @@ public:
 	float MaxDistanceToTrunk; // TODO: Branches should not grow infinitely to the side, maximal the height from Branchpoint to top or bottom (whatever is shorter)
 	int DaysWithoutEnergy = 0;
 	bool CanGrowLeaves = true;
-
-	static constexpr int MaxDaysWithoutEnergy = 7;
-	static constexpr float DailyCostMultiplier = 5.0f;
-	
-	static constexpr float SegmentCost = 10.0f;
-	static constexpr float BranchCost = 40.0f;
-	static constexpr float LeavesCost = 60.0f;
-
-	static constexpr float TreeTotalEnergyMultiplier = 0.2; // How much Energy will be sent to the NewSegments
-	static constexpr float GrowthLengthMulitplier = 5.0f;
-	static constexpr float GrowthRadiusMultiplier = 0.0001f;
-	static constexpr float MinGrowthAngle = 0.0f;
-	static constexpr float MaxGrowthAngle = 20.0f;
-	static constexpr float MinBranchAngle = 20.0f;
-	static constexpr float MaxBranchAngle = 120.0f;
 };

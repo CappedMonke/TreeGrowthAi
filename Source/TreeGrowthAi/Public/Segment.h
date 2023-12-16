@@ -50,14 +50,14 @@ public:
 	bool CanGrowLeaves = true;
 
 	static constexpr int MaxDaysWithoutEnergy = 7;
-	static constexpr float DailyCostMultiplier = 1.4f;
+	static constexpr float DailyCostMultiplier = 5.0f;
 	
-	static constexpr float SegmentCost = 15.0f;
+	static constexpr float SegmentCost = 10.0f;
 	static constexpr float BranchCost = 40.0f;
 	static constexpr float LeavesCost = 60.0f;
 
-	static constexpr float TreeTotalEnergyMultiplier = 0.4;
-	static constexpr float GrowthLengthMulitplier = 10.0f;
+	static constexpr float TreeTotalEnergyMultiplier = 0.2; // How much Energy will be sent to the NewSegments
+	static constexpr float GrowthLengthMulitplier = 5.0f;
 	static constexpr float GrowthRadiusMultiplier = 0.0001f;
 	static constexpr float MinGrowthAngle = 0.0f;
 	static constexpr float MaxGrowthAngle = 20.0f;

@@ -39,7 +39,7 @@ void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection
 	USegment* SegmentObj = NewObject<USegment>();
 	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost);
 	ToSegments.Add(SegmentObj);
-	
+
 	Energy = Energy / 2;
 }
 
@@ -65,7 +65,7 @@ void USegment::ShareEnergy()
 void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
 {
 	if(!ShouldBranchOff) return;
-	if (Energy - SegmentCost - BranchCost < 0) return;
+	if (Energy - BranchCost < 0) return;
 
 	// TODO: Handle that they dont spawn too close to each other
 	
@@ -73,14 +73,14 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 	CanGrowLeaves = false;
 	
 	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 4 - SegmentCost);
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - BranchCost) / 4);
 	ToSegments.Add(SegmentObj); // Segment
 	
 	SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 4 - BranchCost);
-	ToSegments.Add(SegmentObj); // Branch
-	
-	Energy = Energy / 2;
+	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - BranchCost) / 4);
+	ToSegments.Add(SegmentObj); // Branc
+
+	Energy = (Energy - BranchCost) / 2;
 }
 
 void USegment::GrowLeaves(const bool ShouldGrowLeaves)
@@ -115,7 +115,7 @@ void USegment::Grow()
 	Energy -= Radius * DailyCostMultiplier;
 	Radius += Energy * GrowthRadiusMultiplier;
 	const float EnergyToSpend = Energy * TreeTotalEnergyMultiplier;
-	Tree->TotalEnergy = EnergyToSpend;
+	Tree->TreeEnergy += EnergyToSpend;
 	Energy -= EnergyToSpend;
 }
 

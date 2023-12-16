@@ -24,10 +24,10 @@ public:
 
 	// Debugging
 	UFUNCTION(CallInEditor, Category="Tree")
-	void AddSegment() const;
+	void AddSegment();
 
 	UFUNCTION(CallInEditor, Category="Tree")
-	void BranchOff() const;
+	void BranchOff();
 
 	UFUNCTION(CallInEditor, Category="Tree")
 	void GrowLeaves() const;
@@ -38,7 +38,7 @@ public:
 	bool EnableDebug = true;
 	
 	UPROPERTY(EditAnywhere, Category="Tree")
-	int InitEnergy = 100;
+	int InitEnergy = 2000;
 
 	int Day = 0;
 
@@ -55,7 +55,7 @@ public:
 	TArray<ALeaves*> AllLeaves;
 
 	void RemoveSegment(USegment* Segment);
-	float TotalEnergy = 0;
+	float TreeEnergy = 0;
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

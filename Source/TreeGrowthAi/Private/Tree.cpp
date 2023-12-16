@@ -33,10 +33,13 @@ void ATree::GenerateTree()
 }
 
 void ATree::AdvanceDay()
-{
+{	
 	for (const auto& Leaf : AllLeaves)
 	{
-		Leaf->CollectEnergy();
+		if (Leaf)
+		{
+			Leaf->CollectEnergy();
+		}
 	}
 	
 	for (const auto& Segment : LeavesSegments)
@@ -44,9 +47,9 @@ void ATree::AdvanceDay()
 		Segment->ShareEnergy();
 	}
 
-	const int SegmentEnergyShare = TotalEnergy / AllSegments.Num();
-	TotalEnergy = 0;
-	for (const auto& Segment : AllSegments)
+	const int SegmentEnergyShare = TreeEnergy / AllSegments.Num();
+	TreeEnergy = 0;
+	for (const auto& Segment : NewSegments)
 	{
 		Segment->Energy += SegmentEnergyShare;
 	}
@@ -72,7 +75,7 @@ void ATree::DrawDebug() const
 	
 	FlushPersistentDebugLines(GetWorld());
 	FlushDebugStrings(GetWorld());
-	float OverallEnergy = 0;
+	float OverallEnergy = TreeEnergy;
 	for (const auto& Segment : AllSegments)
 	{
 		OverallEnergy += Segment->Energy;
@@ -87,7 +90,7 @@ void ATree::DrawDebug() const
 
 	for (const auto& Segment : NewSegments)
 	{
-		float EnergyRatio = FMath::Clamp(Segment->Energy / 100, 0, 1);
+		float EnergyRatio = FMath::Clamp(Segment->Energy / USegment::BranchCost, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
 		FColor Color = FColor(Red, Green, 0);
@@ -95,7 +98,7 @@ void ATree::DrawDebug() const
 	}
 }
 
-void ATree::AddSegment() const
+void ATree::AddSegment()
 {
 	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
@@ -104,11 +107,13 @@ void ATree::AddSegment() const
 		SegmentDirection += FVector(FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f));
 		Segment->GrowSegment(true, SegmentDirection);
 	}
+
+	AdvanceDay();
 	
 	DrawDebug();
 }
 
-void ATree::BranchOff() const
+void ATree::BranchOff()
 {
 	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
@@ -123,6 +128,8 @@ void ATree::BranchOff() const
 		Segment->BranchOff(true, SegmentDirection, BranchDirection);
 	}
 
+	AdvanceDay();
+	
 	DrawDebug();
 }
 

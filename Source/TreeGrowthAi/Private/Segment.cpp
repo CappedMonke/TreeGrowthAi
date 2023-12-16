@@ -28,7 +28,19 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 	{
 		Tree->Height = Height;
 	}
-		
+
+	const FVector RotationAxis = End - Start;
+	FVector DotProduct = FVector(0, RotationAxis.Z, -RotationAxis.Y);
+	DotProduct.Normalize();
+	DotProduct *= Radius;
+	for (int i = 0; i < Tree->MeshQuality; i++)
+	{
+		const float DegreesToRotate = 360.0f / Tree->MeshQuality * i;
+		const FVector RotatedPoint = UKismetMathLibrary::RotateAngleAxis(DotProduct, DegreesToRotate, RotationAxis);
+		VerticesStart.Add(Start + RotatedPoint);
+		VerticesEnd.Add(End + RotatedPoint);
+	}
+	
 	Tree->AllSegments.Add(this);
 	Tree->NewSegments.Add(this);
 }
@@ -121,7 +133,6 @@ void USegment::Grow()
 		{
 			DeleteToSegments();
 		}
-		Energy = 0;
 		return;
 	}
 
@@ -132,9 +143,18 @@ void USegment::Grow()
 	
 	Energy -= Radius * Tree->DailyCostMultiplier;
 	Radius += Energy / Tree->InitEnergy * Tree->GrowthRadiusMultiplier;
-	const float EnergyToSpend = Energy * Tree->TreeTotalEnergyMultiplier;
+	const float EnergyToSpend = Energy * Tree->TreeEnergyMultiplier;
 	Tree->SavedEnergy += EnergyToSpend;
 	Energy -= EnergyToSpend;
+
+	for (auto& Vertex : VerticesStart)
+	{
+		Vertex = Start + (Vertex - Start).GetSafeNormal() * Radius;
+	}
+	for (auto& Vertex : VerticesEnd)
+	{
+		Vertex = End + (Vertex - End).GetSafeNormal() * Radius;
+	}
 }
 
 void USegment::DeleteToSegments()

@@ -7,8 +7,10 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
+
 ATree::ATree()
 {
+	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
 }
 
 void ATree::GenerateTree()
@@ -32,6 +34,7 @@ void ATree::GenerateTree()
 	OverallEnergy = InitEnergy;
 	Day = 0;
 	DrawDebug();
+	DrawTree();
 }
 
 void ATree::AdvanceDay()
@@ -49,9 +52,9 @@ void ATree::AdvanceDay()
 		Segment->ShareEnergy();
 	}
 
-	const int SegmentEnergyShare = SavedEnergy / NewSegments.Num();
+	const int SegmentEnergyShare = SavedEnergy / AllSegments.Num();
 	SavedEnergy = 0;
-	for (const auto& Segment : NewSegments)
+	for (const auto& Segment : AllSegments)
 	{
 		Segment->Energy += SegmentEnergyShare;
 	}
@@ -69,6 +72,7 @@ void ATree::AdvanceDay()
 	
 	Day++;
 	DrawDebug();
+	DrawTree();
 
 	// Reset if Tree cant grow no more
 	if (NewSegments.IsEmpty())
@@ -109,8 +113,64 @@ void ATree::DrawDebug()
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
 		FColor Color = FColor(Red, Green, 0);
-		DrawDebugSphere(GetWorld(), Segment->End, 2, 8, Color, true);
+		DrawDebugSphere(GetWorld(), Segment->End, 1, 8, Color, true);
 	}
+}
+
+void ATree::DrawTree()
+{
+	if (!EnableMesh) return;
+	Mesh->ClearAllMeshSections();
+	
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FColor> Colors;
+	const int VerticesPerSegment = MeshQuality * 2;
+	for (int i = 0; i < AllSegments.Num(); i++)
+	{
+		Vertices.Append(AllSegments[i]->VerticesStart);
+		Vertices.Append(AllSegments[i]->VerticesEnd);
+
+		for (int j = 0; j < MeshQuality; j++)
+		{			
+			Normals.Add((AllSegments[i]->VerticesStart[j] - AllSegments[i]->Start).GetSafeNormal());
+			Colors.Add(FColor::Blue);
+		}
+
+		for (int j = 0; j < MeshQuality; j++)
+		{
+			Normals.Add((AllSegments[i]->VerticesEnd[j] - AllSegments[i]->End).GetSafeNormal());
+			Colors.Add(FColor::Blue);
+		}
+
+		for (int j = 0; j < MeshQuality; j++)
+		{
+				// BottomToTop
+				Triangles.Add(VerticesPerSegment * i + j);
+				Triangles.Add(VerticesPerSegment * i + MeshQuality + j);
+				if (j < MeshQuality - 1) Triangles.Add(VerticesPerSegment * i + j + 1);
+				else Triangles.Add(VerticesPerSegment * i);
+		}
+
+		for (int j = 0; j < MeshQuality; j++)
+		{
+			// TopToBottom
+			Triangles.Add(VerticesPerSegment * i + MeshQuality + j);
+			if (j < MeshQuality - 1)
+			{
+				Triangles.Add(VerticesPerSegment * i + MeshQuality + j + 1);
+				Triangles.Add(VerticesPerSegment * i + j + 1);
+			}
+			else
+			{
+				Triangles.Add(VerticesPerSegment * i + MeshQuality);
+				Triangles.Add(VerticesPerSegment * i);
+			}	
+		}
+	}
+	
+	Mesh->CreateMeshSection(0, Vertices, Triangles, Normals, TArray<FVector2D>(), Colors, TArray<FProcMeshTangent>(), false);
 }
 
 void ATree::AddSegment()
@@ -122,8 +182,6 @@ void ATree::AddSegment()
 	}
 
 	AdvanceDay();
-	
-	DrawDebug();
 }
 
 void ATree::BranchOff()
@@ -137,8 +195,6 @@ void ATree::BranchOff()
 	}
 
 	AdvanceDay();
-	
-	DrawDebug();
 }
 
 void ATree::GrowLeaves()
@@ -171,6 +227,9 @@ void ATree::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 
 	if (EnableDebug) DrawDebug();
 	else FlushPersistentDebugLines(GetWorld());
+
+	if (EnableMesh) DrawTree();
+	else Mesh->ClearAllMeshSections();
 }
 
 void ATree::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -207,6 +266,7 @@ FVector ATree::GetRandomDirection(const FVector& From, const float MinAngle, con
 	const FVector FromVector = From.GetSafeNormal();
 	const float HelperAngle = FMath::FRandRange(0.0f, 360.0f);
 	FVector HelperDotProduct = FVector(0, FromVector.Z, -FromVector.Y);
+	HelperDotProduct.Normalize();
 	HelperDotProduct.Normalize();
 	const FVector HelperVector = UKismetMathLibrary::RotateAngleAxis(HelperDotProduct, HelperAngle, FromVector);
 	const FVector DotProduct = FVector::CrossProduct(FromVector, HelperVector).GetSafeNormal();

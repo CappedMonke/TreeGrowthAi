@@ -45,7 +45,10 @@ public:
 	float Energy;
 	float Radius = 1.0f;
 	float Height;
-	float MaxDistanceToTrunk; // TODO: Branches should not grow infinitely to the side, maximal the height from Branchpoint to top or bottom (whatever is shorter)
+	float MaxDistanceToTrunk;
 	int DaysWithoutEnergy = 0;
 	bool CanGrowLeaves = true;
+
+	TArray<FVector> VerticesStart;
+	TArray<FVector> VerticesEnd;
 };

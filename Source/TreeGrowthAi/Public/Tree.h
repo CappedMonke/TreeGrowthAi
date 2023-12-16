@@ -6,6 +6,7 @@
 #include "Leaves.h"
 #include "Segment.h"
 #include "GameFramework/Actor.h"
+#include "ProceduralMeshComponent.h"
 #include "Tree.generated.h"
 
 UCLASS()
@@ -33,7 +34,10 @@ public:
 	void GrowLeaves();
 	
 	void DrawDebug();
+	void DrawTree();
 
+	UPROPERTY(EditAnywhere, Category="Tree")
+	bool EnableMesh = false;
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool EnableDebug = true;
 	UPROPERTY(EditAnywhere, Category="Tree")
@@ -41,6 +45,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Tree")
 	int InitEnergy = 2000;
+
+	UPROPERTY(EditAnywhere, Category="Tree")
+	int MeshQuality = 8;
 
 	UPROPERTY(EditAnywhere, Category="Tree")
 	TSubclassOf<ALeaves> LeavesClass;
@@ -81,11 +88,11 @@ public:
 	UPROPERTY(EditAnywhere, Category="Segments", meta = (ToolTip = "The higher the lesser the chance to spawn two branches."))
 	int TwoBranchesSpawnRate = 3;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float TreeTotalEnergyMultiplier = 0.1; // How much Energy will be sent to the NewSegments
+	float TreeEnergyMultiplier = 0.1; // How much Energy will be sent to the NewSegments
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float GrowthLengthMulitplier = 5.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float GrowthRadiusMultiplier = 0.02f;
+	float GrowthRadiusMultiplier = 0.01f;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float MaxSegmentAngle = 8.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
@@ -93,6 +100,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float MaxBranchAngle = 75.0f;
 
+	UPROPERTY()
+	UProceduralMeshComponent* Mesh;
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

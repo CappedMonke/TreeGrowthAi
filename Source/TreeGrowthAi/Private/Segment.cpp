@@ -87,14 +87,17 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
 
-	USegment* SegmentObj;
+	USegment* SegmentObj = SegmentObj = NewObject<USegment>();
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->SegmentCost) / 4);
+	ToSegments.Add(SegmentObj); // Segment
+	
 	if (SecondBranch)
 	{
 		SegmentObj = NewObject<USegment>();
-		SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 8);
+		SegmentObj->Setup(Tree, this, BranchGrowthDirection, Index + 1, (Energy - Tree->BranchCost) / 8);
 		ToSegments.Add(SegmentObj); // Branch
 		
-		const FVector SecondBranchDirection = UKismetMathLibrary::RotateAngleAxis(BranchGrowthDirection.GetSafeNormal(), 180, Start - End);
+		const FVector SecondBranchDirection = UKismetMathLibrary::RotateAngleAxis(BranchGrowthDirection.GetSafeNormal(), 180, BranchGrowthDirection.GetSafeNormal());
 		SegmentObj = NewObject<USegment>();
 		SegmentObj->Setup(Tree, this, SecondBranchDirection, Index + 1, (Energy - Tree->BranchCost) / 8);
 		ToSegments.Add(SegmentObj); // Second Branch
@@ -105,9 +108,6 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 		SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
 		ToSegments.Add(SegmentObj); // Branch
 	}
-	
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->SegmentCost) / 4);
-	ToSegments.Add(SegmentObj); // Segment
 	
 	Energy = (Energy - Tree->BranchCost) / 2;
 }

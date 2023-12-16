@@ -49,25 +49,37 @@ void ATree::AdvanceDay()
 	
 	for (const auto& Segment : LeavesSegments)
 	{
-		Segment->ShareEnergy();
+		if (Segment)
+		{
+			Segment->ShareEnergy();
+		}
 	}
 
 	const int SegmentEnergyShare = SavedEnergy / AllSegments.Num();
 	SavedEnergy = 0;
 	for (const auto& Segment : AllSegments)
 	{
-		Segment->Energy += SegmentEnergyShare;
+		if (Segment)
+		{
+			Segment->Energy += SegmentEnergyShare;
+		}
 	}
 	
 	for (const auto& Segment : AllSegments)
 	{
-		Segment->Grow();
+		if (Segment)
+		{
+			Segment->Grow();
+		}
 	}
 
 	OverallEnergy = 0;
 	for (const auto& Segment : AllSegments)
 	{
-		OverallEnergy += Segment->Energy;
+		if (Segment)
+		{
+			OverallEnergy += Segment->Energy;
+		}
 	}
 	
 	Day++;
@@ -270,6 +282,6 @@ FVector ATree::GetRandomDirection(const FVector& From, const float MinAngle, con
 	HelperDotProduct.Normalize();
 	const FVector HelperVector = UKismetMathLibrary::RotateAngleAxis(HelperDotProduct, HelperAngle, FromVector);
 	const FVector DotProduct = FVector::CrossProduct(FromVector, HelperVector).GetSafeNormal();
-	return UKismetMathLibrary::RotateAngleAxis(FromVector, FMath::FRandRange(MinAngle, MaxAngle), DotProduct).GetSafeNormal();
+	return UKismetMathLibrary::RotateAngleAxis(FromVector, FMath::FRandRange(MinAngle, MaxAngle), DotProduct);
 }
 

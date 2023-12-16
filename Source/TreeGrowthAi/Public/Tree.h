@@ -51,7 +51,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Tree")
 	TSubclassOf<ALeaves> LeavesClass;
-
+		
 	UPROPERTY()
 	TArray<USegment*> AllSegments;
 	UPROPERTY()

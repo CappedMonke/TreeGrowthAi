@@ -30,9 +30,9 @@ public:
 	void BranchOff();
 
 	UFUNCTION(CallInEditor, Category="Tree")
-	void GrowLeaves() const;
+	void GrowLeaves();
 	
-	void DrawDebug() const;
+	void DrawDebug();
 
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool EnableDebug = true;
@@ -58,6 +58,7 @@ public:
 
 	void RemoveSegment(USegment* Segment);
 	float TreeEnergy = 0;
+	float OverallEnergy = 0;
 
 	UPROPERTY(EditAnywhere, Category="Segments")
 	int MaxDaysWithoutEnergy = 7;
@@ -78,17 +79,18 @@ public:
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float GrowthRadiusMultiplier = 0.1f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float MinGrowthAngle = 0.0f;
-	UPROPERTY(EditAnywhere, Category="Segments")
-	float MaxGrowthAngle = 20.0f;
+	float MaxSegmentAngle = 10.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float MinBranchAngle = 20.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float MaxBranchAngle = 90.0f;
+	float MaxBranchAngle = 70.0f;
 
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void BeginPlay() override;
+
+private:
+	static FVector GetRandomDirection(const FVector& From, const float MinAngle, const float MaxAngle);
 };

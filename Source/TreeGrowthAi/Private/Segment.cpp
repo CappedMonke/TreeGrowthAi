@@ -4,7 +4,6 @@
 
 #include "Leaves.h"
 #include "Tree.h"
-#include "Kismet/BlueprintTypeConversions.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -68,9 +67,8 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 {
 	if (!ShouldBranchOff) return;
 	if (Energy - Tree->BranchCost < 0) return;
-
-	// TODO: Handle that they dont spawn too close to each other
-	
+	if (SecondBranch && Energy - Tree->BranchCost * 2 < 0 ) return;
+		
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
 	

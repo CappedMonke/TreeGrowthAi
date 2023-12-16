@@ -4,6 +4,7 @@
 #include "Tree.h"
 
 #include "Segment.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 ATree::ATree()
@@ -27,7 +28,8 @@ void ATree::GenerateTree()
 	}
 
 	NewObject<USegment>()->Setup(this, nullptr, FVector::UpVector, 0, InitEnergy);
-	
+
+	OverallEnergy = InitEnergy;
 	Day = 0;
 	DrawDebug();
 }
@@ -58,6 +60,12 @@ void ATree::AdvanceDay()
 	{
 		Segment->Grow();
 	}
+
+	OverallEnergy = 0;
+	for (const auto& Segment : AllSegments)
+	{
+		OverallEnergy += Segment->Energy;
+	}
 	
 	Day++;
 	DrawDebug();
@@ -69,18 +77,15 @@ void ATree::AdvanceDay()
 	}
 }
 
-void ATree::DrawDebug() const
+void ATree::DrawDebug()
 {
 	if (!EnableDebug) return;
 	
 	FlushPersistentDebugLines(GetWorld());
 	FlushDebugStrings(GetWorld());
-	float OverallEnergy = TreeEnergy;
 	for (const auto& Segment : AllSegments)
 	{
 		if (!Segment) break;
-		
-		OverallEnergy += Segment->Energy;
 		float EnergyRatio = FMath::Clamp(Segment->Energy / InitEnergy, 0, 1);
 		const float Red = FMath::Lerp(255.0f, 0.0f, EnergyRatio);
 		const float Green = FMath::Lerp(0.0f, 255.0f, EnergyRatio);
@@ -113,9 +118,7 @@ void ATree::AddSegment()
 	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
 	{
-		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
-		SegmentDirection += FVector(FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f), FMath::FRandRange(-0.1f, 0.1f));
-		Segment->GrowSegment(true, SegmentDirection);
+		Segment->GrowSegment(true, GetRandomDirection(Segment->End - Segment->Start, 0, MaxSegmentAngle));
 	}
 
 	AdvanceDay();
@@ -129,14 +132,9 @@ void ATree::BranchOff()
 	for (const auto& Segment : Segments)
 	{
 		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
-		SegmentDirection += FVector(FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f), FMath::FRandRange(-0.15f, 0.15f));
-		FVector BranchDirection = SegmentDirection + FVector(
-			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
-			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f),
-			(FMath::RandRange(0, 1) == 0) ? FMath::FRandRange(-0.8f, -0.2f) : FMath::FRandRange(0.2f, 0.8f)
-		);
+		Segment->GrowSegment(true, GetRandomDirection(Segment->End - Segment->Start, 0, MaxSegmentAngle));
 		const bool TwoBranches = FMath::RandRange(0, TwoBranchesSpawnRate) == 0 ? true : false;
-		Segment->BranchOff(true, SegmentDirection, BranchDirection, TwoBranches);
+		Segment->BranchOff(true, SegmentDirection, GetRandomDirection(Segment->End - Segment->Start, MinBranchAngle, MaxBranchAngle), TwoBranches);
 	}
 
 	AdvanceDay();
@@ -144,7 +142,7 @@ void ATree::BranchOff()
 	DrawDebug();
 }
 
-void ATree::GrowLeaves() const
+void ATree::GrowLeaves()
 {
 	if (!LeavesClass) return;
 	
@@ -200,5 +198,19 @@ void ATree::BeginPlay()
 	Super::BeginPlay();
 
 	GenerateTree();
+}
+
+FVector ATree::GetRandomDirection(const FVector& From, const float MinAngle, const float MaxAngle)
+{
+	check(MinAngle >= 0);
+	check(MaxAngle <= 90);
+
+	const FVector FromVector = From.GetSafeNormal();
+	const float HelperAngle = FMath::FRandRange(0.0f, 360.0f);
+	FVector HelperDotProduct = FVector(0, FromVector.Z, -FromVector.Y);
+	HelperDotProduct.Normalize();
+	const FVector HelperVector = UKismetMathLibrary::RotateAngleAxis(HelperDotProduct, HelperAngle, FromVector);
+	const FVector DotProduct = FVector::CrossProduct(FromVector, HelperVector).GetSafeNormal();
+	return UKismetMathLibrary::RotateAngleAxis(FromVector, FMath::FRandRange(MinAngle, MaxAngle), DotProduct).GetSafeNormal();
 }
 

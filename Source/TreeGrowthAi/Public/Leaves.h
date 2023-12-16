@@ -13,5 +13,20 @@ class TREEGROWTHAI_API ALeaves : public AActor
 
 public:
 	ALeaves();
-	
+	float GetCollectedEnergy();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void CollectEnergy();
+
+	UFUNCTION(BlueprintCallable)
+	void GainEnergy();
+
+	UFUNCTION(BlueprintCallable)
+	void Decay();
+
+private:
+	static constexpr float EnergyGain = 100;
+	static constexpr int MaxDaysWithoutEnergy = 5;
+	int DaysWithoutEnergy = 0;
+	float CollectedEnergy = 0;
 };

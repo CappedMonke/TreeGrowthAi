@@ -50,10 +50,15 @@ public:
 	UPROPERTY()
 	TArray<USegment*> NewSegments;
 	UPROPERTY()
+	TArray<USegment*> LeavesSegments;
+	UPROPERTY()
 	TArray<ALeaves*> AllLeaves;
 
 	void RemoveSegment(USegment* Segment);
+	float TotalEnergy = 0;
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void BeginPlay() override;
 };

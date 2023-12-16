@@ -23,7 +23,7 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 	}
 	End = Start + ToLocation * GrowthLengthMulitplier;
 	Height = End.Z;
-
+		
 	Tree->AllSegments.Add(this);
 	Tree->NewSegments.Add(this);
 }
@@ -37,10 +37,29 @@ void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection
 	CanGrowLeaves = false;
 	
 	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy - SegmentCost);
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost);
 	ToSegments.Add(SegmentObj);
 	
-	Energy = 0;
+	Energy = Energy / 2;
+}
+
+// Is only called for Segments with leaves
+void USegment::ShareEnergy()
+{
+	if (!Leaves)
+	{
+		Tree->AllLeaves.Remove(nullptr);
+		Tree->LeavesSegments.Remove(this);
+		return;
+	}
+	
+	const float SharedEnergy = Leaves->GetCollectedEnergy() / Index;;
+	USegment* Segment = this;
+	while (Segment)
+	{
+		Segment->Energy += SharedEnergy;
+		Segment = Segment->FromSegment;
+	}
 }
 
 void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection)
@@ -54,30 +73,31 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 	CanGrowLeaves = false;
 	
 	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - SegmentCost);
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 4 - SegmentCost);
 	ToSegments.Add(SegmentObj); // Segment
 	
 	SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - BranchCost);
+	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, Energy / 4 - BranchCost);
 	ToSegments.Add(SegmentObj); // Branch
 	
-	Energy = 0;
+	Energy = Energy / 2;
 }
 
 void USegment::GrowLeaves(const bool ShouldGrowLeaves)
 {
 	if(!ShouldGrowLeaves || !CanGrowLeaves) return;
-	
+	if (Energy - LeavesCost < 0) return;
+
+	Energy -= LeavesCost;
 	CanGrowLeaves = false;
 	Leaves = Tree->GetWorld()->SpawnActor<ALeaves>(Tree->LeavesClass, End, FRotator::ZeroRotator);
+	Tree->LeavesSegments.Add(this);
 	Tree->AllLeaves.Add(Leaves);
 }
 
 void USegment::Grow()
 {
-	Energy -= Radius * DailyCostMultiplier;
-
-	if(Energy < 0)
+	if(Energy - Radius * DailyCostMultiplier < 0)
 	{
 		DaysWithoutEnergy++;
 		if (DaysWithoutEnergy > MaxDaysWithoutEnergy)
@@ -85,11 +105,18 @@ void USegment::Grow()
 			DeleteToSegments();
 		}
 		Energy = 0;
+		return;
 	}
-	else
+
+	if (DaysWithoutEnergy > 0)
 	{
-		DaysWithoutEnergy = 0;
+		DaysWithoutEnergy--;
 	}
+	Energy -= Radius * DailyCostMultiplier;
+	Radius += Energy * GrowthRadiusMultiplier;
+	const float EnergyToSpend = Energy * TreeTotalEnergyMultiplier;
+	Tree->TotalEnergy = EnergyToSpend;
+	Energy -= EnergyToSpend;
 }
 
 void USegment::DeleteToSegments()

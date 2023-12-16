@@ -19,7 +19,8 @@ public:
 	void BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection);
 	void GrowLeaves(const bool ShouldGrowLeaves);
 	void GrowSegment(bool ShouldGrow, const FVector& GrowthDirection);
-	void Grow(); // TODO: This must grow the leaves, the bigger the leaves, the higher the gained Energy.
+	void ShareEnergy();
+	void Grow();
 	void DeleteToSegments();
 
 	UPROPERTY()
@@ -48,15 +49,16 @@ public:
 	int DaysWithoutEnergy = 0;
 	bool CanGrowLeaves = true;
 
-	static constexpr int MaxDaysWithoutEnergy = 14;
+	static constexpr int MaxDaysWithoutEnergy = 7;
 	static constexpr float DailyCostMultiplier = 1.4f;
 	
-	static constexpr float SegmentCost = 20.0f;
+	static constexpr float SegmentCost = 15.0f;
 	static constexpr float BranchCost = 40.0f;
 	static constexpr float LeavesCost = 60.0f;
-	
+
+	static constexpr float TreeTotalEnergyMultiplier = 0.4;
 	static constexpr float GrowthLengthMulitplier = 10.0f;
-	static constexpr float GrowthRadiusMultiplier = 0.1f;
+	static constexpr float GrowthRadiusMultiplier = 0.0001f;
 	static constexpr float MinGrowthAngle = 0.0f;
 	static constexpr float MaxGrowthAngle = 20.0f;
 	static constexpr float MinBranchAngle = 20.0f;

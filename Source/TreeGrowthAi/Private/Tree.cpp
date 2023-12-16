@@ -49,8 +49,8 @@ void ATree::AdvanceDay()
 		Segment->ShareEnergy();
 	}
 
-	const int SegmentEnergyShare = TreeEnergy / NewSegments.Num();
-	TreeEnergy = 0;
+	const int SegmentEnergyShare = SavedEnergy / NewSegments.Num();
+	SavedEnergy = 0;
 	for (const auto& Segment : NewSegments)
 	{
 		Segment->Energy += SegmentEnergyShare;
@@ -131,10 +131,9 @@ void ATree::BranchOff()
 	TArray<USegment*> Segments = NewSegments;
 	for (const auto& Segment : Segments)
 	{
-		FVector SegmentDirection = (Segment->End - Segment->Start).GetSafeNormal();
-		Segment->GrowSegment(true, GetRandomDirection(Segment->End - Segment->Start, 0, MaxSegmentAngle));
 		const bool TwoBranches = FMath::RandRange(0, TwoBranchesSpawnRate) == 0 ? true : false;
-		Segment->BranchOff(true, SegmentDirection, GetRandomDirection(Segment->End - Segment->Start, MinBranchAngle, MaxBranchAngle), TwoBranches);
+		Segment->BranchOff(true, GetRandomDirection(Segment->End - Segment->Start, 0, MaxSegmentAngle),
+			GetRandomDirection(Segment->End - Segment->Start, MinBranchAngle, MaxBranchAngle), TwoBranches);
 	}
 
 	AdvanceDay();

@@ -24,6 +24,10 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 	}
 	End = Start + ToLocation * Tree->GrowthLengthMulitplier;
 	Height = End.Z;
+	if (Tree->Height < Height)
+	{
+		Tree->Height = Height;
+	}
 		
 	Tree->AllSegments.Add(this);
 	Tree->NewSegments.Add(this);
@@ -66,28 +70,33 @@ void USegment::ShareEnergy()
 void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection, const bool SecondBranch)
 {
 	if (!ShouldBranchOff) return;
-	if (Energy - Tree->BranchCost < 0) return;
-	if (SecondBranch && Energy - Tree->BranchCost * 2 < 0 ) return;
-		
+	if (Energy - Tree->BranchCost - Tree->SegmentCost < 0) return;
+	
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
-	
-	USegment* SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
-	ToSegments.Add(SegmentObj); // Segment
-	
-	SegmentObj = NewObject<USegment>();
-	SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
-	ToSegments.Add(SegmentObj); // Branch
 
+	USegment* SegmentObj;
 	if (SecondBranch)
 	{
+		SegmentObj = NewObject<USegment>();
+		SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 8);
+		ToSegments.Add(SegmentObj); // Branch
+		
 		const FVector SecondBranchDirection = UKismetMathLibrary::RotateAngleAxis(BranchGrowthDirection.GetSafeNormal(), 180, Start - End);
 		SegmentObj = NewObject<USegment>();
-		SegmentObj->Setup(Tree, this, SecondBranchDirection, Index + 1, (Energy - Tree->BranchCost) / 4);
+		SegmentObj->Setup(Tree, this, SecondBranchDirection, Index + 1, (Energy - Tree->BranchCost) / 8);
+		ToSegments.Add(SegmentObj); // Second Branch
+	}
+	else
+	{
+		SegmentObj = NewObject<USegment>();
+		SegmentObj->Setup(Tree, this, BranchGrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->BranchCost) / 4);
 		ToSegments.Add(SegmentObj); // Branch
 	}
-
+	
+	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, (Energy - Tree->SegmentCost) / 4);
+	ToSegments.Add(SegmentObj); // Segment
+	
 	Energy = (Energy - Tree->BranchCost) / 2;
 }
 
@@ -124,7 +133,7 @@ void USegment::Grow()
 	Energy -= Radius * Tree->DailyCostMultiplier;
 	Radius += Energy / Tree->InitEnergy * Tree->GrowthRadiusMultiplier;
 	const float EnergyToSpend = Energy * Tree->TreeTotalEnergyMultiplier;
-	Tree->TreeEnergy += EnergyToSpend;
+	Tree->SavedEnergy += EnergyToSpend;
 	Energy -= EnergyToSpend;
 }
 

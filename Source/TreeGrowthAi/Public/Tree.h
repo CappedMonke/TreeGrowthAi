@@ -42,8 +42,6 @@ public:
 	UPROPERTY(EditAnywhere, Category="Tree")
 	int InitEnergy = 2000;
 
-	int Day = 0;
-
 	UPROPERTY(EditAnywhere, Category="Tree")
 	TSubclassOf<ALeaves> LeavesClass;
 
@@ -57,8 +55,18 @@ public:
 	TArray<ALeaves*> AllLeaves;
 
 	void RemoveSegment(USegment* Segment);
-	float TreeEnergy = 0;
+	float SavedEnergy = 0;
 	float OverallEnergy = 0;
+	float Height = 0;
+	int Day = 0;
+
+	UPROPERTY(EditAnywhere, Category="KIRewards")
+	float OverallEnergyRewardMultiplier = 0.01f;
+	UPROPERTY(EditAnywhere, Category="KIRewards")
+	float HeightRewardMultiplier = 1.0f;
+	UPROPERTY(EditAnywhere, Category="KIRewards")
+	float DayRewardMultiplier = 100.0f;
+	
 
 	UPROPERTY(EditAnywhere, Category="Segments")
 	int MaxDaysWithoutEnergy = 7;
@@ -69,21 +77,21 @@ public:
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float BranchCost = 40.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float LeavesCost = 60.0f;
+	float LeavesCost = 50.0f;
 	UPROPERTY(EditAnywhere, Category="Segments", meta = (ToolTip = "The higher the lesser the chance to spawn two branches."))
 	int TwoBranchesSpawnRate = 3;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float TreeTotalEnergyMultiplier = 0.2; // How much Energy will be sent to the NewSegments
+	float TreeTotalEnergyMultiplier = 0.1; // How much Energy will be sent to the NewSegments
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float GrowthLengthMulitplier = 5.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float GrowthRadiusMultiplier = 0.1f;
+	float GrowthRadiusMultiplier = 0.02f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float MaxSegmentAngle = 10.0f;
+	float MaxSegmentAngle = 8.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float MinBranchAngle = 20.0f;
+	float MinBranchAngle = 25.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
-	float MaxBranchAngle = 70.0f;
+	float MaxBranchAngle = 75.0f;
 
 	
 protected:

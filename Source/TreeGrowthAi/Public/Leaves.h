@@ -23,9 +23,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Decay();
+	
+	float EnergyGain = 0;
 
 private:
-	static constexpr float EnergyGain = 100;
 	static constexpr int MaxDaysWithoutEnergy = 5;
 	int DaysWithoutEnergy = 0;
 	float CollectedEnergy = 0;

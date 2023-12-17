@@ -11,6 +11,17 @@
 ATree::ATree()
 {
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
+
+	AllSegments.Empty();
+	NewSegments.Empty();
+	for (const auto& Leaves : AllLeaves)
+	{
+		if (Leaves)
+		{
+			Leaves->Destroy();
+		}
+	}
+	AllLeaves.Empty();
 }
 
 void ATree::GenerateTree()
@@ -306,7 +317,7 @@ void ATree::DrawDebug()
 
 void ATree::DrawTree()
 {
-	if (!EnableMesh) return;
+	if (!EnableMesh || AllSegments.IsEmpty() || AllSegments[0] == nullptr) return;
 	Mesh->ClearAllMeshSections();
 	
 	TArray<FVector> Vertices;

@@ -120,6 +120,7 @@ void USegment::GrowLeaves(const bool ShouldGrowLeaves)
 	Energy -= Tree->LeavesCost;
 	CanGrowLeaves = false;
 	Leaves = Tree->GetWorld()->SpawnActor<ALeaves>(Tree->LeavesClass, End, FRotator::ZeroRotator);
+	Leaves->EnergyGain = Tree->LeavesEnergyGain;
 	Tree->LeavesSegments.Add(this);
 	Tree->AllLeaves.Add(Leaves);
 }

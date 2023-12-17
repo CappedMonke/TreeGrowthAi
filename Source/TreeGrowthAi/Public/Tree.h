@@ -91,7 +91,7 @@ public:
 	bool TreeTooBig = false;
 	
 	UPROPERTY(EditAnywhere, Category="Segments")
-	int MaxSegments = 10000;
+	int MaxSegments = 5000;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	int MaxDaysWithoutEnergy = 7;
 	UPROPERTY(EditAnywhere, Category="Segments")
@@ -116,6 +116,8 @@ public:
 	float MinBranchAngle = 25.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float MaxBranchAngle = 75.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float LeavesEnergyGain = 100.0f;
 
 	UPROPERTY()
 	UProceduralMeshComponent* Mesh;

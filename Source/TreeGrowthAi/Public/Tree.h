@@ -56,7 +56,7 @@ public:
 	bool EnableDebugStrings = true;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Tree")
-	int InitEnergy = 2000;
+	float InitEnergy = 2000;
 
 	UPROPERTY(EditAnywhere, Category="Tree")
 	int MeshQuality = 8;
@@ -76,7 +76,7 @@ public:
 	void RemoveSegment(USegment* Segment);
 	
 	float SavedEnergy = 0;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	float OverallEnergy = 0;
 	UPROPERTY(BlueprintReadOnly)
 	float Height = 0;
@@ -130,7 +130,8 @@ protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
+	
 private:
 	static FVector GetRandomDirection(const FVector& From, const float MinAngle, const float MaxAngle);
 	static FVector GetDirection(const FVector& From, const float MinAngle, const float MaxAngle, const float Angle);

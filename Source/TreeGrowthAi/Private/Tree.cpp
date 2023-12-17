@@ -10,6 +10,8 @@
 
 ATree::ATree()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
 
 	AllSegments.Empty();
@@ -246,6 +248,16 @@ void ATree::BeginPlay()
 	Super::BeginPlay();
 
 	GenerateTree();
+}
+
+void ATree::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(0, 1, FColor::Black, FString::Printf(TEXT("Overall Energy: %f"), OverallEnergy));
+	}
 }
 
 FVector ATree::GetRandomDirection(const FVector& From, const float MinAngle, const float MaxAngle)

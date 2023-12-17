@@ -48,7 +48,8 @@ void USegment::Setup(ATree* TreeIn, USegment* LastSegment, const FVector& ToLoca
 void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection)
 {
 	if(!ShouldGrow) return;
-	if (Energy - Tree->SegmentCost < 0) return;
+	const float DistanceCost = (Start - Tree->GetActorLocation()).Length() * Tree->DistanceFromRootBranchCostMultiplier;
+	if (Energy - Tree->SegmentCost - DistanceCost < 0) return;
 
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
@@ -57,7 +58,7 @@ void USegment::GrowSegment(const bool ShouldGrow, const FVector& GrowthDirection
 	SegmentObj->Setup(Tree, this, GrowthDirection.GetSafeNormal(), Index + 1, Energy / 2 - Tree->SegmentCost);
 	ToSegments.Add(SegmentObj);
 
-	Energy = Energy / 2;
+	Energy = (Energy - DistanceCost) / 2;
 }
 
 // Is only called for Segments with leaves
@@ -82,7 +83,8 @@ void USegment::ShareEnergy()
 void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirection, const FVector& BranchGrowthDirection, const bool SecondBranch)
 {
 	if (!ShouldBranchOff) return;
-	if (Energy - Tree->BranchCost - Tree->SegmentCost < 0) return;
+	const float DistanceCost = (Start - Tree->GetActorLocation()).Length() * Tree->DistanceFromRootBranchCostMultiplier;
+	if (Energy - Tree->BranchCost - Tree->SegmentCost - DistanceCost < 0) return;
 	
 	Tree->NewSegments.Remove(this);
 	CanGrowLeaves = false;
@@ -109,7 +111,7 @@ void USegment::BranchOff(const bool ShouldBranchOff, const FVector& GrowthDirect
 		ToSegments.Add(SegmentObj); // Branch
 	}
 	
-	Energy = (Energy - Tree->BranchCost) / 2;
+	Energy = (Energy - DistanceCost) / 2;
 }
 
 void USegment::GrowLeaves(const bool ShouldGrowLeaves)

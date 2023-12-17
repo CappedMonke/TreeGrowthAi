@@ -118,6 +118,8 @@ public:
 	float MaxBranchAngle = 75.0f;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	float LeavesEnergyGain = 100.0f;
+	UPROPERTY(EditAnywhere, Category="Segments")
+	float DistanceFromRootBranchCostMultiplier = 1.5f;
 
 	UPROPERTY()
 	UProceduralMeshComponent* Mesh;

@@ -138,7 +138,7 @@ void ATree::AddBranches(TArray<float> ShouldAdd, TArray<float> SegmentAngles, TA
 
 void ATree::AddLeaves(TArray<float> ShouldAdd)
 {
-	if (!LeavesClass) return;
+	if (!LeavesClass || AllSegments.IsEmpty() || AllSegments[0] == nullptr) return;
 	
 	TArray<USegment*> Segments = NewSegments;
 	for (int i = 0; i  < Segments.Num(); i++)

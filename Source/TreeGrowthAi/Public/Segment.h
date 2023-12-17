@@ -43,7 +43,7 @@ public:
 	
 	int Index; // Multiple Segments can have the same Index. It gives us the number of Segments before this.
 	float Energy;
-	float Radius = 1.0f;
+	float Radius = 0.3f;
 	float Height;
 	float MaxDistanceToTrunk;
 	int DaysWithoutEnergy = 0;

@@ -148,9 +148,8 @@ void ATree::AddBranches(TArray<float> ShouldAdd, TArray<float> SegmentAngles, TA
 	TArray<USegment*> Segments = NewSegments;
 	for (int i = 0; i  < Segments.Num(); i++)
 	{
-		const bool TwoBranches = ShouldAddSecond[i] < 5? false : true;
 		Segments[i]->BranchOff(FloatToBool(ShouldAdd[i]), GetDirection(Segments[i]->End - Segments[i]->Start, 0, MaxSegmentAngle, SegmentAngles[i]),
-			GetDirection(Segments[i]->End - Segments[i]->Start, MinBranchAngle, MaxBranchAngle, BranchAngles[i]), TwoBranches);
+			GetDirection(Segments[i]->End - Segments[i]->Start, MinBranchAngle, MaxBranchAngle, BranchAngles[i]), FloatToBool(ShouldAddSecond[i]));
 	}
 }
 

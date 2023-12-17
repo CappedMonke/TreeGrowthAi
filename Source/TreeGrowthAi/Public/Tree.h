@@ -73,6 +73,11 @@ public:
 	UPROPERTY()
 	TArray<ALeaves*> AllLeaves;
 
+	UPROPERTY(BlueprintReadWrite)
+	int DaysWithoutGrowth = 0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int MaxDaysWithoutGrowth = 7;
+	
 	void RemoveSegment(USegment* Segment);
 	
 	float SavedEnergy = 0;

@@ -35,6 +35,7 @@ void ATree::GenerateTree()
 	Height = 0;
 	Day = 0;
 	NumberOfSegments = 0;
+	DaysWithoutGrowth = 0;
 	
 	if(!AllSegments.IsEmpty())
 	{
@@ -58,6 +59,7 @@ void ATree::GenerateTree()
 
 void ATree::AdvanceDay()
 {
+	const int NoOfSegments = AllSegments.Num();
 	for (const auto& Leaf : AllLeaves)
 	{
 		if (Leaf)
@@ -99,6 +101,20 @@ void ATree::AdvanceDay()
 		{
 			OverallEnergy += Segment->Energy;
 		}
+	}
+	
+	if (NoOfSegments == AllSegments.Num())
+	{
+		DaysWithoutGrowth++;
+
+		if (DaysWithoutGrowth > MaxDaysWithoutGrowth)
+		{
+			TreeDead = true;
+		}
+	}
+	else
+	{
+		DaysWithoutGrowth = 0;
 	}
 	
 	Day++;

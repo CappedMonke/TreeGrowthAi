@@ -17,21 +17,33 @@ class TREEGROWTHAI_API ATree : public AActor
 public:
 	ATree();
 
-	UFUNCTION(CallInEditor, Category="Tree")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category="Tree")
 	void GenerateTree();
 
-	UFUNCTION(CallInEditor, Category="Tree")
+	UFUNCTION(BlueprintCallable, Category="Tree")
 	void AdvanceDay();
 
+	UFUNCTION(BlueprintCallable, Category="Tree")
+	void AddSegments(TArray<float> ShouldAdd, TArray<float> Angles);
+
+	UFUNCTION(BlueprintCallable, Category="Tree")
+	void AddBranches(TArray<float> ShouldAdd, TArray<float> SegmentAngles, TArray<float> BranchAngles, TArray<float> ShouldAddSecond);
+
+	UFUNCTION(BlueprintCallable, Category="Tree")
+	void AddLeaves(TArray<float> ShouldAdd);
+	
 	// Debugging
 	UFUNCTION(CallInEditor, Category="Tree")
-	void AddSegment();
+	void AdvanceDayEditor();
+	
+	UFUNCTION(CallInEditor, Category="Tree")
+	void AddSegmentsEditor();
 
 	UFUNCTION(CallInEditor, Category="Tree")
-	void BranchOff();
+	void AddBranchesEditor();
 
 	UFUNCTION(CallInEditor, Category="Tree")
-	void GrowLeaves();
+	void AddLeavesEditor();
 	
 	void DrawDebug();
 	void DrawTree();
@@ -43,7 +55,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Tree")
 	bool EnableDebugStrings = true;
 	
-	UPROPERTY(EditAnywhere, Category="Tree")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Tree")
 	int InitEnergy = 2000;
 
 	UPROPERTY(EditAnywhere, Category="Tree")
@@ -62,19 +74,24 @@ public:
 	TArray<ALeaves*> AllLeaves;
 
 	void RemoveSegment(USegment* Segment);
-	float SavedEnergy = 0;
-	float OverallEnergy = 0;
-	float Height = 0;
-	int Day = 0;
-
-	UPROPERTY(EditAnywhere, Category="KIRewards")
-	float OverallEnergyRewardMultiplier = 0.01f;
-	UPROPERTY(EditAnywhere, Category="KIRewards")
-	float HeightRewardMultiplier = 1.0f;
-	UPROPERTY(EditAnywhere, Category="KIRewards")
-	float DayRewardMultiplier = 100.0f;
 	
+	float SavedEnergy = 0;
+	UPROPERTY(BlueprintReadOnly)
+	float OverallEnergy = 0;
+	UPROPERTY(BlueprintReadOnly)
+	float Height = 0;
+	UPROPERTY(BlueprintReadOnly)
+	int Day = 0;
+	UPROPERTY(BlueprintReadOnly)
+	float NumberOfSegments = 0;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool TreeDead = false;
+	UPROPERTY(BlueprintReadOnly)
+	bool TreeTooBig = false;
+	
+	UPROPERTY(EditAnywhere, Category="Segments")
+	int MaxSegments = 10000;
 	UPROPERTY(EditAnywhere, Category="Segments")
 	int MaxDaysWithoutEnergy = 7;
 	UPROPERTY(EditAnywhere, Category="Segments")
@@ -102,6 +119,8 @@ public:
 
 	UPROPERTY()
 	UProceduralMeshComponent* Mesh;
+
+	static bool FloatToBool(const float F);
 	
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
@@ -110,4 +129,5 @@ protected:
 
 private:
 	static FVector GetRandomDirection(const FVector& From, const float MinAngle, const float MaxAngle);
+	static FVector GetDirection(const FVector& From, const float MinAngle, const float MaxAngle, const float Angle);
 };
